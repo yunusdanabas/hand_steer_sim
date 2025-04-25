@@ -1,5 +1,9 @@
 <?xml version="1.0"?>
 <launch>
+  <!-- Yunus Emre Danabas -->
+  <!-- Launches the Gazebo simulation of a mobile robot with differential drive -->
+  <!-- and spawns the robot model in Gazebo. -->
+
   <!-- Arguments -->
   <arg name="model" default="$(find hand_steer_sim)/urdf/mobile_robot.urdf.xacro"/>
   <arg name="gui" default="true" />

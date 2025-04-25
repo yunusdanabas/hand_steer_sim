@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Yunus Emre Danabas -->
+  <!-- Selects between USB webcam, RealSense UVC, or full driver -->
+
+  <!-- Forwarded args -->
+  <arg name="camera_name"      default="/dev/video0"/>
+  <arg name="realsense"        default="false"/>   <!-- plain RealSense RGB -->
+  <arg name="rs_driver"        default="false"/>   <!-- full RealSense driver -->
+  <arg name="realsense_device" default="/dev/video6"/>  <!-- D435 color UVC -->
+
+  <!-- Full RealSense driver (color + depth) -->
+  <group if="$(arg rs_driver)">
+
+  <!-- 
+
+    <node name="realsense_camera"
+          pkg="realsense2_camera"
+          type="realsense2_camera_node"
+          output="screen">
+      <param name="enable_color" value="true"/>
+      <param name="enable_depth" value="true"/>
+    </node>
+
+    <remap from="/camera/color/image_raw"      to="/image_raw"/>
+    <remap from="/camera/depth/image_rect_raw" to="/depth_raw"/>
+  
+  -->
+
+  </group>
+
+
+  <!-- RealSense as plain webcam (only if realsense AND NOT rs_driver) -->
+  <group if="$(arg realsense)">
+    <group unless="$(arg rs_driver)">
+      <node name="realsense_rgb_publisher"
+            pkg="hand_steer_sim"
+            type="image_publisher_launch.py"
+            output="screen">
+        <!-- override camera_name to the D435 UVC color device -->
+        <param name="camera_name" value="$(arg realsense_device)"/>
+      </node>
+    </group>
+  </group>
+
+  <!-- Standard integrated webcam -->
+  <group unless="$(arg realsense)">
+    <group unless="$(arg rs_driver)">
+      <node name="webcam_publisher"
+            pkg="hand_steer_sim"
+            type="image_publisher_launch.py"
+            output="screen">
+        <param name="camera_name" value="$(arg camera_name)"/>
+      </node>
+    </group>
+  </group>
+
+</launch>

@@ -64,7 +64,7 @@ class CameraPublisher:
 
 if __name__ == "__main__":
     # Initialize the ROS node
-    rospy.init_node("my_cam", anonymous=True)
+    rospy.init_node("camera_interface", anonymous=True)
     rospy.loginfo("Starting camera publisher node...")
 
     # Create the CameraPublisher object
