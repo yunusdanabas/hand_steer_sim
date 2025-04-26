@@ -37,6 +37,10 @@ class HandSignRecognitionNode:
                       self.image_topic, self.gesture_topic)
 
     # ------------------------------------------------------------------ #
+
+
+    # ------------------ Original Callbacks ----------------- #
+    
     def image_callback(self, msg: Image) -> None:
         try:
             frame = self._bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
@@ -53,9 +57,64 @@ class HandSignRecognitionNode:
             cv.waitKey(1)
 
     # ------------------------------------------------------------------ #
+
+    # ------------------ Timing Callbacks ----------------- #
+
+    """
+    def image_callback(self, msg: Image) -> None:
+        
+        # Callback for image subscriber: times each stage (decode, inference,
+        # publish, display) and logs the results once per second.
+        
+        # Start overall timer
+        t_start = rospy.get_time()
+
+        # 1) Decode ROS Image → OpenCV frame
+        try:
+            t0 = rospy.get_time()
+            frame = self._bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
+            dt_decode = rospy.get_time() - t0
+        except CvBridgeError as err:
+            rospy.logerr_throttle(5.0, "cv_bridge: %s", err)
+            return
+
+        # 2) Gesture inference (MediaPipe + TFLite)
+        t1 = rospy.get_time()
+        dbg_img, gesture = self._detector.recognise(frame)
+        dt_infer = rospy.get_time() - t1
+
+        # 3) Publish gesture string
+        t2 = rospy.get_time()
+        self._pub.publish(gesture)
+        dt_pub = rospy.get_time() - t2
+
+        # 4) Display (only if requested)
+        dt_disp = 0.0
+        if self.show_image:
+            t3 = rospy.get_time()
+            fps = self._fpscalc.get()
+            cv.imshow("Gesture-Recognition (ROS)", 
+                    self._detector.draw_fps_info(dbg_img, fps))
+            cv.waitKey(1)
+            dt_disp = rospy.get_time() - t3
+
+        # Total processing time
+        dt_total = rospy.get_time() - t_start
+
+        # Log once per second to avoid flooding
+        rospy.loginfo_throttle(
+            1.0,
+            "timings (ms): decode=%.1f  infer=%.1f  pub=%.1f  disp=%.1f  total=%.1f",
+            dt_decode*1e3, dt_infer*1e3, dt_pub*1e3, dt_disp*1e3, dt_total*1e3
+        )
+
+    """
+    # ------------------------------------------------------------------ #
+
     @staticmethod
     def cleanup() -> None:
         cv.destroyAllWindows()
+
 
 
 def main() -> None:
