@@ -2,10 +2,9 @@
 <package format="2">
   <name>hand_steer_sim</name>
 
-  <!-- updated to match setup.py -->
   <version>0.1.0</version>
 
-  <description>The hand_steer_sim package</description>
+  <description> The hand_steer_sim package for EE417 course project </description>
   <maintainer email="yunusdanabas@sabanciuniv.edu">yunusdanabas</maintainer>
   <license>TODO</license>
 
