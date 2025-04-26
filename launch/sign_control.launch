@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- Yunus Emre Danabaş -->
+
+  <!-- sign_control -->
   <!-- Main launcher: ties together camera, simulation, gesture recognition, and control -->
 
   <!-- Topics for gesture output and robot control -->
@@ -8,8 +9,7 @@
   <arg name="control_topic"        default="/robot_diff_drive_controller/cmd_vel"/>
 
   <!-- Camera-selection flags & defaults -->
-  <arg name="realsense"         default="false"/>   <!-- RealSense as plain RGB UVC -->
-  <arg name="rs_driver"         default="false"/>   <!-- Full RealSense driver -->
+  <arg name="mode"         default="webcam"/>   <!-- Camera Mode -->
   <arg name="camera_name"       default="/dev/video0"/>  <!-- Default USB/integrated cam -->
   <arg name="realsense_device"  default="/dev/video6"/>  <!-- D435 color UVC device -->
 
@@ -18,9 +18,8 @@
 
   <!-- Camera interface (delegates to camera_interface.launch) -->
   <include file="$(find hand_steer_sim)/launch/camera_interface.launch">
-    <arg name="camera_name"      value="$(arg camera_name)"/>
-    <arg name="realsense"        value="$(arg realsense)"/>
-    <arg name="rs_driver"        value="$(arg rs_driver)"/>
+    <arg name="mode"      value="$(arg mode)"/>
+    <arg name="camera_name"        value="$(arg camera_name)"/>
     <arg name="realsense_device" value="$(arg realsense_device)"/>
   </include>
 
@@ -33,9 +32,9 @@
   <include file="$(find hand_steer_sim)/launch/gesture_recognition.launch"/>
 
   <!-- Map recognized gestures to velocity commands -->
-  <node name="sign_to_controller"
+  <node name="gesture_to_twist_node"
         pkg="hand_steer_sim"
-        type="sign_to_controller.py"
+        type="gesture_to_twist_node.py"
         output="screen">
     <param name="publish_gesture_topic" value="$(arg publish_gesture_topic)"/>
     <param name="control_topic"         value="$(arg control_topic)"/>

@@ -1,7 +1,6 @@
 from collections import deque
 import cv2 as cv
 
-
 class CvFpsCalc(object):
     """Class for calculating frame per second (fps)
 

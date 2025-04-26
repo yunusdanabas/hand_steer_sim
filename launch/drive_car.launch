@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- Yunus Emre Danabas -->
+
+  <!-- drive_car.launch -->
   <!-- Launches the Gazebo simulation of a mobile robot with differential drive -->
   <!-- and spawns the robot model in Gazebo. -->
 
@@ -9,10 +10,12 @@
   <arg name="gui" default="true" />
   <arg name="rvizconfig" default="$(find hand_steer_sim)/urdf/urdf.rviz" />
   <arg name="rviz" default="false" />
+  <arg name="headless" default="false"/>
 
   <!-- Parameters and rosparams -->
   <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
   <param name="use_gui" value="$(arg gui)"/>
+  
   <rosparam command="load" file="$(find hand_steer_sim)/config/diffdrive.yaml" ns="robot_diff_drive_controller" />
   <rosparam command="load" file="$(find hand_steer_sim)/config/gazebo_ros_control_params.yaml" />
   <rosparam command="load" file="$(find hand_steer_sim)/config/joints.yaml" ns="mobile_robot_joint_state_controller" />
