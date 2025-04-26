@@ -13,7 +13,7 @@ import cv2 as cv
 import numpy as np
 import mediapipe as mp
 
-from hand_steer_sim.model import KeyPointClassifier
+from hand_steer_sim.model.static_mode import KeyPointClassifier
 
 
 mp_drawing        = mp.solutions.drawing_utils
