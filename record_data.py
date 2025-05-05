@@ -8,6 +8,7 @@ from collections import Counter
 from collections import deque
 
 import cv2 as cv
+import pyrealsense2 as rs
 import numpy as np
 import mediapipe as mp
 mp_drawing        = mp.solutions.drawing_utils
@@ -25,6 +26,13 @@ def get_args():
     parser.add_argument("--device", type=int, default=0)
     parser.add_argument("--width", help='cap width', type=int, default=960)
     parser.add_argument("--height", help='cap height', type=int, default=540)
+
+    # Switch to Intel RealSense instead of OpenCV VideoCapture
+    parser.add_argument(
+        "--realsense",
+        action="store_true",
+        help="Use Intel RealSense D4xx camera (color stream only)"
+    )
 
     parser.add_argument('--use_static_image_mode', action='store_true')
     parser.add_argument("--min_detection_confidence",
@@ -54,9 +62,19 @@ def main():
     min_tracking_confidence = args.min_tracking_confidence
 
     # Camera Preparation ###############################################################
-    cap = cv.VideoCapture(cap_device)
-    cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
-    cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
+    # … after parsing args …
+    if args.realsense:
+        pipeline = rs.pipeline()
+        cfg = rs.config()
+        cfg.enable_stream(rs.stream.color,
+                          args.width, args.height,
+                          rs.format.bgr8, 30)
+        pipeline.start(cfg)
+    else:
+        cap = cv.VideoCapture(args.device)
+        cap.set(cv.CAP_PROP_FRAME_WIDTH,  args.width)
+        cap.set(cv.CAP_PROP_FRAME_HEIGHT, args.height)
+
 
     # Model Loading #############################################################
     mp_hands = mp.solutions.hands
@@ -108,11 +126,27 @@ def main():
         number, mode = select_mode(key, mode)
 
         # Camera Capture #####################################################
-        ret, image = cap.read()
-        if not ret:
-            break
+        if args.realsense:
+            frames     = pipeline.wait_for_frames()
+            color_frame = frames.get_color_frame()
+            if not color_frame:
+                continue
+            image = np.asanyarray(color_frame.get_data())
+        else:
+            ret, image = cap.read()
+            if not ret:
+                break
+        
         image = cv.flip(image, 1)  # Mirror image
         debug_image = image.copy()
+
+        # top-bar instructions
+        cv.putText(debug_image, "Hand Tracking Simulation - Data Recording", (10, 30),
+                cv.FONT_HERSHEY_SIMPLEX, 0.8, (0,0,0), 2, cv.LINE_AA)
+        cv.putText(debug_image,
+            "[k] -> log keypoints   [h] -> log history   [n] -> neutral   [0-9] -> class   [Esc] -> quit",
+            (10, 60), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, cv.LINE_AA)
+        
 
         # Detection Execution #############################################################
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
@@ -185,10 +219,14 @@ def main():
         debug_image = draw_info(debug_image, fps, mode, number)
 
         # Screen Reflection #############################################################
-        cv.imshow('Hand Gesture Recognition', debug_image)
+        cv.imshow('Yunus Emre Danabas - Data Collecting', debug_image)
 
-    cap.release()
+    if args.realsense:
+        pipeline.stop()
+    else:
+        cap.release()
     cv.destroyAllWindows()
+
 
 
 def select_mode(key, mode):
@@ -267,20 +305,38 @@ def draw_point_history(image, point_history):
 
 
 def draw_info(image, fps, mode, number):
-    cv.putText(image, "FPS:" + str(fps), (10, 30), cv.FONT_HERSHEY_SIMPLEX,
-               1.0, (0, 0, 0), 4, cv.LINE_AA)
-    cv.putText(image, "FPS:" + str(fps), (10, 30), cv.FONT_HERSHEY_SIMPLEX,
-               1.0, (255, 255, 255), 2, cv.LINE_AA)
+    img_h, img_w = image.shape[:2]
+    text = f"FPS:{fps:.2f}"
+    # measure text size
+    (text_w, text_h), baseline = cv.getTextSize(
+        text, cv.FONT_HERSHEY_SIMPLEX, 1.0, 2
+    )
+    # position at top-right with 10px margin
+    x = img_w - text_w - 10
+    y = text_h + 10
+
+    # draw shadow
+    cv.putText(
+        image, text, (x, y),
+        cv.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 0), 4, cv.LINE_AA
+    )
+    # draw text
+    cv.putText(
+        image, text, (x, y),
+        cv.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 2, cv.LINE_AA
+    )
 
     mode_string = ['Logging Key Point', 'Logging Point History']
     if 1 <= mode <= 2:
-        cv.putText(image, "MODE:" + mode_string[mode - 1], (10, 90),
-                   cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1,
-                   cv.LINE_AA)
+        cv.putText(
+            image, "MODE:" + mode_string[mode - 1], (10, img_h - 50),
+            cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv.LINE_AA
+        )
         if 0 <= number <= 9:
-            cv.putText(image, "NUM:" + str(number), (10, 110),
-                       cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1,
-                       cv.LINE_AA)
+            cv.putText(
+                image, "NUM:" + str(number), (10, img_h - 30),
+                cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv.LINE_AA
+            )
     return image
 
 
