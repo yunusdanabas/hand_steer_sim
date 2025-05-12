@@ -23,12 +23,15 @@ class HandSignRecognitionNode:
         label_path = p("~keypoint_classifier_label", "hand_steer_sim/model/static_mode/keypoint_classifier/keypoint_classifier_label.csv")
         model_path = p("~keypoint_classifier_model", "hand_steer_sim/model/static_mode/keypoint_classifier/keypoint_classifier.tflite")
         self.show_image    = p("~show_image", True)
+        use_gpu      = p("~use_gpu", False)
 
         # ---------------- helpers ------------------- #
         self._bridge  = CvBridge()
         self._fpscalc = CvFpsCalc(buffer_len=10)
-        self._detector = GestureRecognition(label_path, model_path)
-
+        self._detector = GestureRecognition(label_path,
+                                    model_path,
+                                    use_gpu=use_gpu)
+        
         # ---------------- ROS I/O ------------------- #
         rospy.Subscriber(self.image_topic, Image, self.image_callback, queue_size=1)
         self._pub = rospy.Publisher(self.gesture_topic, String, queue_size=10)

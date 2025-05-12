@@ -2,38 +2,43 @@
 <launch>
   <!-- Launch either Static or Steering recognizer -->
 
-  <!-- 1) Control mode: static or steering -->
+  <!-- Control mode: static or steering -->
   <arg name="control_mode" default="static"/>
 
-  <!-- 2) ROS namespace -->
+  <!-- Use GPU or CPU for inference -->
+  <arg name="use_gpu" default="false"/>
+
+  <!-- ROS namespace -->
   <arg name="ns" default="hand_steer"/>
 
-  <!-- 3) Static-Mode model args (always declared) -->
+  <!-- Static-Mode model args (always declared) -->
   <arg name="keypoint_classifier_label"
        default="$(find hand_steer_sim)/hand_steer_sim/model/static_mode/keypoint_classifier/keypoint_classifier_label.csv"/>
   <arg name="keypoint_classifier_model"
        default="$(find hand_steer_sim)/hand_steer_sim/model/static_mode/keypoint_classifier/keypoint_classifier.tflite"/>
 
-  <!-- 4) Steering-Mode model args (always declared) -->
+  <!-- Steering-Mode model args (always declared) -->
   <arg name="steering_classifier_label"
        default="$(find hand_steer_sim)/hand_steer_sim/model/steering_mode/wheel_lstm/wheel_lstm_label.csv"/>
   <arg name="steering_classifier_model"
        default="$(find hand_steer_sim)/hand_steer_sim/model/steering_mode/wheel_lstm/wheel_lstm.tflite"/>
 
-  <!-- 5) Common image & UI args -->
+  <!-- Common image & UI args -->
   <arg name="subscribe_image_topic" default="/image_raw"/>
   <arg name="publish_gesture_topic" default="/gesture/hand_sign"/>
   <arg name="show_image"            default="true"/>
 
-  <!-- 6) Launch in the requested mode -->
+  <!-- Launch in the requested mode -->
   <group ns="$(arg ns)">
 
-    <!-- 6a) Static Mode -->
+    <!-- a) Static Mode -->
     <group if="$(eval arg('control_mode')=='static')">
       <node name="hand_sign_recognition"
             pkg="hand_steer_sim"
             type="hand_sign_recognition_node.py"
             output="screen">
+            
+        <param name="use_gpu"                  value="$(arg use_gpu)"/>
         <param name="control_mode"             value="static"/>
         <param name="keypoint_classifier_label" value="$(arg keypoint_classifier_label)"/>
         <param name="keypoint_classifier_model" value="$(arg keypoint_classifier_model)"/>
@@ -43,12 +48,13 @@
       </node>
     </group>
 
-    <!-- 6b) Steering Mode -->
+    <!-- b) Steering Mode -->
     <group if="$(eval arg('control_mode')=='steering')">
       <node name="steering_sign_recognition"
             pkg="hand_steer_sim"
             type="steering_sign_recognition_node.py"
             output="screen">
+        <param name="use_gpu"                   value="$(arg use_gpu)"/>
         <param name="control_mode"               value="steering"/>
         <param name="steering_classifier_label"   value="$(arg steering_classifier_label)"/>
         <param name="steering_classifier_model"   value="$(arg steering_classifier_model)"/>

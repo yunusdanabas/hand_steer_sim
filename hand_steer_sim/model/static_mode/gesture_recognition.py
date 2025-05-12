@@ -28,13 +28,14 @@ class GestureRecognition:
         label_path: str | Path,
         model_path: str | Path,
         *,
+        use_gpu: bool = False,
         static_image_mode: bool = False,
         min_det_conf: float = 0.7,
         min_track_conf: float = 0.7,
     ) -> None:
 
         self._labels: list[str] = self._load_labels(label_path)
-        self._classifier        = KeyPointClassifier(str(model_path))
+        self._classifier        = KeyPointClassifier(str(model_path), use_gpu=use_gpu)
 
         self._mp_hands = mp.solutions.hands.Hands(
             static_image_mode=static_image_mode,
