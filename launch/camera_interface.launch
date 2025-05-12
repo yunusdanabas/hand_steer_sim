@@ -11,6 +11,7 @@
   <arg name="mode"             default="webcam"/>      <!-- webcam | realsense | rs_driver -->
 
   <!-- Full RealSense driver (color + depth) -->
+  <!-- We wont use this in this project -->
   <group if="$(eval arg('mode') == 'rs_driver')">
     <!--
     <node name="realsense_camera"
