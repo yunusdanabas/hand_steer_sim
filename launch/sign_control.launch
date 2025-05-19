@@ -2,7 +2,7 @@
 <launch>
   <!-- Main launcher: ties camera, simulation, gesture-recognition, and control -->
 
-  <!-- 1) New: choose between static vs steering -->
+  <!-- Choose between static vs steering -->
   <arg name="control_mode" default="static"/>  <!-- static | steering -->
   
   <arg name="show_image"   default="true"/>
@@ -11,13 +11,16 @@
   <arg name="publish_gesture_topic" default="/gesture/hand_sign"/>
   <arg name="control_topic"         default="/robot_diff_drive_controller/cmd_vel"/>
 
-  <!-- Camera flags (unchanged) -->
+  <!-- Camera flags  -->
   <arg name="mode"               default="webcam"/>
   <arg name="camera_name"        default="/dev/video0"/>
   <arg name="realsense_device"   default="/dev/video6"/>
 
   <!-- Drive the simulated car -->
   <arg name="drive_car" default="false"/>
+
+  <!-- Use GPU or CPU for inference -->
+  <arg name="use_gpu" default="false"/>
 
   <!-- Camera interface -->
   <include file="$(find hand_steer_sim)/launch/camera_interface.launch">
@@ -38,6 +41,7 @@
     <arg name="subscribe_image_topic"   value="/image_raw"/>
     <arg name="publish_gesture_topic"   value="$(arg publish_gesture_topic)"/>
     <arg name="show_image"              value="true"/>
+    <arg name="use_gpu"                 value="$(arg use_gpu)"/>
   </include>
 
   <!-- 3) Discrete twist mapper (Static Mode) -->
