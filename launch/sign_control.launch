@@ -1,43 +1,68 @@
 <?xml version="1.0"?>
 <launch>
+  <!-- Main launcher: ties camera, simulation, gesture-recognition, and control -->
 
-  <!-- sign_control -->
-  <!-- Main launcher: ties together camera, simulation, gesture recognition, and control -->
+  <!-- Choose between static vs steering -->
+  <arg name="control_mode" default="static"/>  <!-- static | steering -->
+  
+  <arg name="show_image"   default="true"/>
 
   <!-- Topics for gesture output and robot control -->
   <arg name="publish_gesture_topic" default="/gesture/hand_sign"/>
-  <arg name="control_topic"        default="/robot_diff_drive_controller/cmd_vel"/>
+  <arg name="control_topic"         default="/robot_diff_drive_controller/cmd_vel"/>
 
-  <!-- Camera-selection flags & defaults -->
-  <arg name="mode"         default="webcam"/>   <!-- Camera Mode -->
-  <arg name="camera_name"       default="/dev/video0"/>  <!-- Default USB/integrated cam -->
-  <arg name="realsense_device"  default="/dev/video6"/>  <!-- D435 color UVC device -->
+  <!-- Camera flags  -->
+  <arg name="mode"               default="webcam"/>
+  <arg name="camera_name"        default="/dev/video0"/>
+  <arg name="realsense_device"   default="/dev/video6"/>
 
   <!-- Drive the simulated car -->
   <arg name="drive_car" default="false"/>
 
-  <!-- Camera interface (delegates to camera_interface.launch) -->
+  <!-- Use GPU or CPU for inference -->
+  <arg name="use_gpu" default="false"/>
+
+  <!-- Camera interface -->
   <include file="$(find hand_steer_sim)/launch/camera_interface.launch">
-    <arg name="mode"      value="$(arg mode)"/>
-    <arg name="camera_name"        value="$(arg camera_name)"/>
+    <arg name="mode"             value="$(arg mode)"/>
+    <arg name="camera_name"      value="$(arg camera_name)"/>
     <arg name="realsense_device" value="$(arg realsense_device)"/>
   </include>
 
-  <!-- Launch Gazebo robot if requested -->
+  <!-- Gazebo robot if requested -->
   <group if="$(arg drive_car)">
     <include file="$(find hand_steer_sim)/launch/drive_car.launch"/>
   </group>
 
-  <!-- Gesture recognition pipeline -->
-  <include file="$(find hand_steer_sim)/launch/gesture_recognition.launch"/>
+  <!-- 2) Forward control_mode & UI args into gesture_recognition.launch -->
+  <include file="$(find hand_steer_sim)/launch/gesture_recognition.launch">
+    <arg name="control_mode"            value="$(arg control_mode)"/>
+    <arg name="ns"                      value="hand_steer"/>
+    <arg name="subscribe_image_topic"   value="/image_raw"/>
+    <arg name="publish_gesture_topic"   value="$(arg publish_gesture_topic)"/>
+    <arg name="show_image"              value="true"/>
+    <arg name="use_gpu"                 value="$(arg use_gpu)"/>
+  </include>
 
-  <!-- Map recognized gestures to velocity commands -->
-  <node name="gesture_to_twist_node"
-        pkg="hand_steer_sim"
-        type="gesture_to_twist_node.py"
-        output="screen">
-    <param name="publish_gesture_topic" value="$(arg publish_gesture_topic)"/>
-    <param name="control_topic"         value="$(arg control_topic)"/>
-  </node>
+  <!-- 3) Discrete twist mapper (Static Mode) -->
+  <group if="$(eval arg('control_mode') == 'static')">
+    <node name="gesture_to_twist_node"
+          pkg="hand_steer_sim"
+          type="gesture_to_twist_node.py"
+          output="screen">
+      <param name="publish_gesture_topic" value="$(arg publish_gesture_topic)"/>
+      <param name="control_topic"         value="$(arg control_topic)"/>
+    </node>
+  </group>
 
+  <!-- 4) Continuous twist mapper (Steering Mode) -->
+  <group if="$(eval arg('control_mode') == 'steering')">
+    <node name="wheel_to_twist_node"
+          pkg="hand_steer_sim"
+          type="wheel_to_twist_node.py"
+          output="screen">
+      <param name="wheel_topic"   value="/gesture/wheel_angle"/>
+      <param name="control_topic" value="$(arg control_topic)"/>
+    </node>
+  </group>
 </launch>

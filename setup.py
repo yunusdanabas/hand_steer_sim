@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+
+# SHOULD BE UPDATED IN THE END OF THE PROJECT - Yunus
+
 from setuptools import setup, find_packages
 
 setup(

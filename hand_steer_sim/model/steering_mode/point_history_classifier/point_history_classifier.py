@@ -2,18 +2,34 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import tensorflow as tf
+from typing import List
 
 
 class PointHistoryClassifier(object):
     def __init__(
         self,
-        model_path='model/point_history_classifier/point_history_classifier.tflite',
+        model_path='/home/yunusdanabas/catkin_ws/src/hand_steer_sim/hand_steer_sim/model/steering_mode/point_history_classifier/point_history_classifier.tflite',
         score_th=0.5,
         invalid_value=0,
         num_threads=1,
+        use_gpu=False,
     ):
-        self.interpreter = tf.lite.Interpreter(model_path=model_path,
-                                               num_threads=num_threads)
+        delegates: List[tf.lite.experimental.Delegate] | None = None
+        if use_gpu:
+            try:
+                delegates = [
+                    tf.lite.experimental.load_delegate("libtensorflowlite_gpu_delegate.so")
+                ]
+                print("[PointHistoryClassifier] GPU delegate loaded ✓")
+            except (ValueError, OSError):
+                # Could not load GPU delegate → fall back to CPU
+                print("[PointHistoryClassifier] GPU delegate unavailable, using CPU.")
+
+        self.interpreter = tf.lite.Interpreter(
+            model_path=model_path,
+            num_threads=num_threads,
+            experimental_delegates=delegates,
+        )
 
         self.interpreter.allocate_tensors()
         self.input_details = self.interpreter.get_input_details()
