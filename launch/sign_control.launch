@@ -15,6 +15,7 @@
   <arg name="mode"               default="webcam"/>
   <arg name="camera_name"        default="/dev/video0"/>
   <arg name="realsense_device"   default="/dev/video6"/>
+  <!-- /dev/video6 is the default device for the RealSense D435i but this could cause some issues later idk - Yunus --> 
 
   <!-- Drive the simulated car -->
   <arg name="drive_car" default="false"/>

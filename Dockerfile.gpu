@@ -1,0 +1,126 @@
+# ───────────────────────────── Builder Stage ─────────────────────────────
+FROM ubuntu:20.04 AS builder
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 1) Base system setup
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl gnupg2 lsb-release software-properties-common \
+    python3 python3-pip python3-dev python3-distutils \
+    build-essential cmake libusb-1.0-0-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 2) Add ROS repository
+RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
+    -o /usr/share/keyrings/ros-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] \
+    http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main" \
+    > /etc/apt/sources.list.d/ros.list
+
+# 3) Add RealSense repository
+RUN curl -sSL https://librealsense.intel.com/Debian/librealsense.pgp \
+    -o /usr/share/keyrings/librealsense-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/librealsense-archive-keyring.gpg] \
+    https://librealsense.intel.com/Debian/apt-repo $(lsb_release -cs) main" \
+    > /etc/apt/sources.list.d/librealsense.list
+
+# 4) Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-noetic-desktop-full \
+    librealsense2-dkms librealsense2-dev librealsense2-utils \
+    python3-rosdep python3-rosinstall python3-rosinstall-generator \
+    python3-catkin-tools python3-opencv libopencv-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# 5) Build ROS workspace
+WORKDIR /catkin_ws
+RUN /bin/bash -c "source /opt/ros/noetic/setup.bash \
+    && mkdir -p src && cd src && catkin_init_workspace"
+COPY . /catkin_ws/src/hand_steer_sim/
+RUN /bin/bash -c "source /opt/ros/noetic/setup.bash \
+    && cd /catkin_ws && catkin_make --only-pkg-with-deps hand_steer_sim"
+
+# ───────────────────────────── Final Stage ──────────────────────────────
+FROM ubuntu:20.04
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 1) Base system setup
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl gnupg2 lsb-release software-properties-common \
+    && rm -rf /var/lib/apt/lists/*
+
+# 2) Add ROS and RealSense repositories (same as builder)
+RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
+    -o /usr/share/keyrings/ros-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] \
+    http://packages.ros.org/ros/ubuntu $(lsb_release -cs) main" \
+    > /etc/apt/sources.list.d/ros.list
+
+RUN curl -sSL https://librealsense.intel.com/Debian/librealsense.pgp \
+    -o /usr/share/keyrings/librealsense-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/librealsense-archive-keyring.gpg] \
+    https://librealsense.intel.com/Debian/apt-repo $(lsb_release -cs) main" \
+    > /etc/apt/sources.list.d/librealsense.list
+
+# 3) Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-noetic-desktop \
+    ros-noetic-gazebo-ros-pkgs \
+    ros-noetic-gazebo-ros-control \
+    python3 \
+    python3-pip \
+    python3-opencv \
+    libopencv-dev \
+    libxkbcommon-x11-0 \
+    libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 \
+    libxcb-util1 libxcb-sync1 \
+    python3-tk \
+    python3-matplotlib \
+    python3-pyqt5 \
+    librealsense2-utils \
+    liborocos-kdl-dev \
+    qtbase5-dev \
+    qttools5-dev-tools \
+    libqt5gui5 \
+    libqt5widgets5 \
+    x11-apps \
+    libxcb-xinerama0 \
+    libgl1-mesa-glx \
+    mesa-utils \
+    xauth \
+    tzdata \
+    qt5-default \
+    && rm -rf /var/lib/apt/lists/*
+
+# 4) Copy built artifacts
+COPY --from=builder /opt/ros/noetic /opt/ros/noetic
+COPY --from=builder /catkin_ws/devel /catkin_ws/devel
+COPY --from=builder /catkin_ws/src /catkin_ws/src
+
+# 5) Python dependencies
+RUN pip3 install --no-cache-dir --upgrade "pip<23.0" \
+    && pip3 install --no-cache-dir \
+    numpy==1.23.5 \
+    mediapipe==0.10.8 \
+    tflite-runtime==2.10.0 \
+    tensorflow==2.13.0 \
+    pyrealsense2==2.55.1.6486
+
+# 6) System configuration
+RUN groupadd -g 998 video \
+    && usermod -a -G video root \
+    && rosdep init || true \
+    && rosdep update || true \
+    && echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc \
+    && echo "source /catkin_ws/devel/setup.bash" >> /root/.bashrc
+
+# 7) GUI and timezone setup
+ENV QT_DEBUG_PLUGINS=0
+ENV QT_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/qt5/plugins
+ENV QT_QPA_PLATFORM=xcb
+ENV QT_X11_NO_MITSHM=1
+ENV DISPLAY=:0
+ENV QT_AUTO_SCREEN_SCALE_FACTOR=1
+ENV QT_QPA_PLATFORM_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/qt5/plugins/platforms
+ENV QT_LOGGING_RULES="qt.qpa.*=false;qt.qpa.*=false;qt.qpa.*=false"
+ENV TZ=UTC
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
