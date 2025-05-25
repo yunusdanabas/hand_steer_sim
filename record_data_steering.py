@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-record_data.py – data‑collection script (model‑free version)
+record_data_steering.py - data-collection script (model-free version)
 """
 
 # ───────────────────────────── imports ──────────────────────────────
+import os
+# Set Qt environment variables before importing cv2
+os.environ['QT_LOGGING_RULES'] = '*.debug=false;qt.qpa.*=false'
+os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = '1'
+os.environ['QT_QPA_PLATFORM'] = 'xcb'
+
 import argparse
 import csv
 from collections import deque
@@ -32,7 +38,7 @@ def get_args():
     ap.add_argument("--width",   type=int, default=960)
     ap.add_argument("--height",  type=int, default=540)
     ap.add_argument("--realsense", action="store_true",
-                    help="use Intel RealSense colour stream")
+                    help="use Intel RealSense colour stream")
     ap.add_argument("--use_static_image_mode", action="store_true")
     ap.add_argument("--min_detection_confidence", type=float, default=0.7)
     ap.add_argument("--min_tracking_confidence",  type=float, default=0.5)
