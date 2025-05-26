@@ -15,6 +15,9 @@
   <arg name="mode"               default="webcam"/>   <!-- webcam | realsense -->
   <arg name="camera_name"        default="/dev/video0"/>
   <arg name="realsense_device"   default="/dev/video6"/>
+  <arg name="width"              default="960"/>
+  <arg name="height"             default="540"/>
+  <arg name="publish_rate"       default="30"/>
   <!-- /dev/video6 is the default device for the RealSense D435i but this could cause some issues later idk - Yunus --> 
 
   <!-- Drive the simulated car -->
@@ -28,6 +31,9 @@
     <arg name="mode"             value="$(arg mode)"/>
     <arg name="camera_name"      value="$(arg camera_name)"/>
     <arg name="realsense_device" value="$(arg realsense_device)"/>
+    <arg name="width"            value="$(arg width)"/>
+    <arg name="height"           value="$(arg height)"/>
+    <arg name="publish_rate"     value="$(arg publish_rate)"/>
   </include>
 
   <!-- Gazebo robot if requested -->

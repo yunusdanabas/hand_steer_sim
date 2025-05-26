@@ -9,6 +9,9 @@
   <arg name="camera_name"      default="/dev/video0"/>
   <arg name="realsense_device" default="/dev/video6"/>  <!-- D435 UVC color device -->
   <arg name="mode"             default="webcam"/>      <!-- webcam | realsense | rs_driver -->
+  <arg name="width"            default="960"/>
+  <arg name="height"           default="540"/>
+  <arg name="publish_rate"     default="30"/>
 
   <!-- Full RealSense driver (color + depth) -->
   <!-- We wont use this in this project -->
@@ -35,6 +38,10 @@
           output="screen">
       <!-- Use D435 as standard UVC device -->
       <param name="camera_name" value="$(arg realsense_device)"/>
+      <param name="width" value="$(arg width)"/>
+      <param name="height" value="$(arg height)"/>
+      <param name="publish_rate" value="$(arg publish_rate)"/>
+      <param name="use_realsense" value="true"/>
     </node>
   </group>
 
@@ -45,6 +52,10 @@
           type="camera_publisher_node.py"
           output="screen">
       <param name="camera_name" value="$(arg camera_name)"/>
+      <param name="width" value="$(arg width)"/>
+      <param name="height" value="$(arg height)"/>
+      <param name="publish_rate" value="$(arg publish_rate)"/>
+      <param name="use_realsense" value="false"/>
     </node>
   </group>
 </launch>
