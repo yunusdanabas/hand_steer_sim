@@ -60,7 +60,7 @@ RUN apt-get update \
       libgl1-mesa-glx mesa-utils x11-apps \
       python3 python3-pip python3-opencv python3-pyqt5 \
       libqt5gui5 libqt5widgets5 qt5-default \
-      usbutils \
+      usbutils v4l-utils \
  && rm -rf /var/lib/apt/lists/* \
  && ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime \
  && echo ${TZ} > /etc/timezone
