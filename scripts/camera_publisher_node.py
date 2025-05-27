@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+camera_publisher_node.py
 ROS node: publish frames from an OpenCV-compatible camera or Intel RealSense.
 """
 

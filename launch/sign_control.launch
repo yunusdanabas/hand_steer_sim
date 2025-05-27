@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <launch>
+  <!-- sign_control.launch -->
   <!-- Main launcher: ties camera, simulation, gesture-recognition, and control -->
 
   <!-- Choose between static vs steering -->

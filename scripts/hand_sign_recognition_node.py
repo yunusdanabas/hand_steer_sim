@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+hand_sign_recognition_node.py
 ROS node: subscribe to /image, publish gesture label.
 """
 
