@@ -13,9 +13,9 @@
   <arg name="control_topic"         default="/robot_diff_drive_controller/cmd_vel"/>
 
   <!-- Camera flags  -->
-  <arg name="mode"               default="webcam"/>   <!-- webcam | realsense -->
+  <arg name="mode"               default="realsense"/>   <!-- webcam | realsense -->
   <arg name="camera_name"        default="/dev/video0"/>
-  <arg name="realsense_device"   default="/dev/video6"/>
+  <arg name="realsense_device"   default="/dev/video5"/>
   <arg name="width"              default="960"/>
   <arg name="height"             default="540"/>
   <arg name="publish_rate"       default="30"/>

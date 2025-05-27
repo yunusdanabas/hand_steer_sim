@@ -1,3 +1,8 @@
+# ===========================================
+# DOCKER RUN COMMANDS (always use -v for model data persistence!)
+# ===========================================
+
+# --- Run (CPU-only) ---
 docker run -it --rm \
   --name hand_steer_cpu \
   --network host \
@@ -6,134 +11,74 @@ docker run -it --rm \
   -e DISPLAY=$DISPLAY \
   -e QT_X11_NO_MITSHM=1 \
   --privileged \
+  -v $(pwd)/hand_steer_sim/model:/catkin_ws/src/hand_steer_sim/model \
   hand_steer:cpu
 
-
-
+# --- Run (GPU) ---
 docker run -it --rm \
   --gpus all \
   --name hand_steer_gpu \
   --network host \
   --device /dev/bus/usb:/dev/bus/usb \
+  --device /dev/video0:/dev/video5 \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -v $HOME/.Xauthority:/home/yunusdanabasDocker/.Xauthority:ro \
   -e DISPLAY=$DISPLAY \
   -e XAUTHORITY=/home/yunusdanabasDocker/.Xauthority \
   --privileged \
+  -v $(pwd)/hand_steer_sim/model:/catkin_ws/src/hand_steer_sim/model \
   hand_steer:gpu
 
-
-docker run --rm \
+# --- Debug shell (root) ---
+docker run --rm -it \
   --name debug_gpu \
+  --gpus all \
   --device /dev/bus/usb:/dev/bus/usb \
+  --device /dev/video0:/dev/video5 \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -v $HOME/.Xauthority:/home/yunusdanabasDocker/.Xauthority:ro \
   -e DISPLAY=$DISPLAY \
   -e XAUTHORITY=/home/yunusdanabasDocker/.Xauthority \
-  --gpus all \
+  -v $(pwd)/hand_steer_sim/model:/catkin_ws/src/hand_steer_sim/model \
   -u root \
-  -it \
   hand_steer:gpu \
   bash
 
+# ===========================================
+# DEVICE/CAMERA DIAGNOSTICS (host or inside container)
+# ===========================================
+
+ls -l /dev/video*
+v4l2-ctl --list-devices
+
+# ===========================================
+# ROS/WORKSPACE SETUP (inside container)
+# ===========================================
+
+source /opt/ros/noetic/setup.bash
+source /catkin_ws/devel/setup.bash
+
+# ===========================================
+# LAUNCH YOUR SIM (inside container)
+# ===========================================
+
+roslaunch hand_steer_sim sign_control.launch \
+  mode:=realsense \
+  camera_name:=/dev/video5 \
+  realsense_device:=/dev/video5 \
+  drive_car:=true \
+  use_gpu:=true
+
+# ===========================================
+# INSTALL EXTRAS (inside container if needed)
+# ===========================================
 
 apt-get update
 apt-get install -y --no-install-recommends v4l-utils
 
-
-
-
-docker run --rm \
-  --name debug_gpu \
-  --device /dev/video0:/dev/video5 \
-  --device /dev/bus/usb:/dev/bus/usb \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -v $HOME/.Xauthority:/home/yunusdanabasDocker/.Xauthority:ro \
-  -e DISPLAY=$DISPLAY \
-  -e XAUTHORITY=/home/yunusdanabasDocker/.Xauthority \
-  --gpus all \
-  -u root \
-  -it \
-  hand_steer:gpu \
-  bash
-
-
-
-
-docker run -it --rm \
-  --gpus all \
-  --name hand_steer_gpu \
-  --network host \
-  --device /dev/video0:/dev/video5 \
-  --device /dev/bus/usb:/dev/bus/usb \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -v $HOME/.Xauthority:/home/yunusdanabasDocker/.Xauthority:ro \
-  -e DISPLAY=$DISPLAY \
-  -e XAUTHORITY=/home/yunusdanabasDocker/.Xauthority \
-  --privileged \
-  hand_steer:gpu
-
-
-docker run -it --rm \
-  --gpus all \
-  --name hand_steer_gpu \
-  --network host \
-  --device /dev/video0:/dev/video6 \
-  --device /dev/bus/usb:/dev/bus/usb \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -v $HOME/.Xauthority:/home/yunusdanabasDocker/.Xauthority:ro \
-  -e DISPLAY=$DISPLAY \
-  -e XAUTHORITY=/home/yunusdanabasDocker/.Xauthority \
-  --privileged \
-  hand_steer:gpu
-
-
-
-roslaunch hand_steer_sim sign_control.launch \
-    mode:=realsense \
-    realsense_device:=/dev/video6 \
-    camera_name:=/dev/video0 \
-    use_gpu:=True
-
-
-
-docker run -it --rm \
-  --gpus all \
-  --name hand_steer_gpu \
-  --network host \
-  --device /dev/video0:/dev/video5 \
-  --device /dev/bus/usb:/dev/bus/usb \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -v $HOME/.Xauthority:/home/yunusdanabasDocker/.Xauthority:ro \
-  -e DISPLAY=$DISPLAY \
-  -e XAUTHORITY=/home/yunusdanabasDocker/.Xauthority \
-  --privileged \
-  hand_steer:gpu
-
-
-docker run -it --rm \
-  --gpus all \
-  --name hand_steer_gpu \
-  --network host \
-  --device /dev/video0:/dev/video5 \
-  --device /dev/bus/usb:/dev/bus/usb \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  -v $HOME/.Xauthority:/home/yunusdanabasDocker/.Xauthority:ro \
-  -e DISPLAY=$DISPLAY \
-  -e XAUTHORITY=/home/yunusdanabasDocker/.Xauthority \
-  --privileged \
-  hand_steer:gpu
-
-
-ls -l /dev/video*
-
-source /opt/ros/noetic/setup.bash 
-source /catkin_ws/devel/setup.bash 
-
-
-roslaunch hand_steer_sim sign_control.launch \
-  mode:=realsense \
-  camera_name:=/dev/video6 \
-  realsense_device:=/dev/video6 \
-  drive_car:=true \
-  use_gpu:=true 
+# ===========================================
+# CRUCIAL REMINDER!
+# ===========================================
+# Always include:
+#   -v $(pwd)/hand_steer_sim/model:/catkin_ws/src/hand_steer_sim/model
+# in ALL docker run commands to persist your CSV/model data.

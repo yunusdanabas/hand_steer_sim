@@ -8,7 +8,7 @@
   <!-- Arguments -->
   <arg name="camera_name"      default="/dev/video0"/>
   <arg name="realsense_device" default="/dev/video6"/>  <!-- D435 UVC color device -->
-  <arg name="mode"             default="webcam"/>      <!-- webcam | realsense | rs_driver -->
+  <arg name="mode"             default="realsense"/>      <!-- webcam | realsense | rs_driver -->
   <arg name="width"            default="960"/>
   <arg name="height"           default="540"/>
   <arg name="publish_rate"     default="30"/>
