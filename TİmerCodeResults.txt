@@ -1,0 +1,26 @@
+Timer Code Results
+
+Realsense 
+
+Lenova Thinkpad - without GPU - without Gazebo Sim
+
+* **Image Decode:** 0.465 ms
+* **Gesture Inference:** 20.10 ms
+* **Message Publish:** 0.10 ms
+* **Display:** 4.26 ms
+* **Total Processing:** 25.03 ms
+* **Callback FPS:** 39.53
+* **Display FPS:** 29.81
+
+
+Lenova Thinkpad - without GPU - with Gazebo Sim
+
+* **Image Decode:** 4.69 ms
+* **Gesture Inference:** 94.10 ms
+* **Message Publish:** 0.10 ms
+* **Display:** 10.72 ms
+* **Total Processing:** 109.62 ms
+* **Callback FPS:** 9.68
+* **Display FPS:** 8.53
+
+
