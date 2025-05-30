@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-gesture_recognition.py – MediaPipe-based static-gesture classifier
+gesture_recognition.py - MediaPipe-based static-gesture classifier
 """
 
 from __future__ import annotations
@@ -36,6 +36,7 @@ class GestureRecognition:
 
         self._labels: list[str] = self._load_labels(label_path)
         self._classifier        = KeyPointClassifier(str(model_path), use_gpu=use_gpu)
+        self.use_gpu           = use_gpu  # Store use_gpu as instance variable
 
         self._mp_hands = mp.solutions.hands.Hands(
             static_image_mode=static_image_mode,

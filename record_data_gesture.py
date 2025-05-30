@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
-record_data.py - Data-collection script
+record_data_gesture.py - Data-collection script
 
 Usage examples:
   # Basic (web-cam) run

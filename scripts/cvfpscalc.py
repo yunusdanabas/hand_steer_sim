@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+cvfpscalc.py
+Calculate frame per second (fps)
+"""
+
 from collections import deque
 import cv2 as cv
 

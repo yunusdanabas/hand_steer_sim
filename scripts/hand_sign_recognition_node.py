@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+hand_sign_recognition_node.py
 ROS node: subscribe to /image, publish gesture label.
 """
 
@@ -43,7 +44,7 @@ class HandSignRecognitionNode:
 
 
     # ------------------ Original Callbacks ----------------- #
-    
+    """     
     def image_callback(self, msg: Image) -> None:
         try:
             frame = self._bridge.imgmsg_to_cv2(msg, desired_encoding="bgr8")
@@ -58,12 +59,11 @@ class HandSignRecognitionNode:
             fps = self._fpscalc.get()
             cv.imshow("Gesture-Recognition (ROS)", self._detector.draw_fps_info(dbg_img, fps))
             cv.waitKey(1)
-
+     """
     # ------------------------------------------------------------------ #
 
     # ------------------ Timing Callbacks ----------------- #
 
-    """
     def image_callback(self, msg: Image) -> None:
         
         # Callback for image subscriber: times each stage (decode, inference,
@@ -104,14 +104,31 @@ class HandSignRecognitionNode:
         # Total processing time
         dt_total = rospy.get_time() - t_start
 
+        # Calculate FPS from timing
+        callback_fps = 1.0 / dt_total if dt_total > 0 else 0
+
         # Log once per second to avoid flooding
         rospy.loginfo_throttle(
             1.0,
-            "timings (ms): decode=%.1f  infer=%.1f  pub=%.1f  disp=%.1f  total=%.1f",
-            dt_decode*1e3, dt_infer*1e3, dt_pub*1e3, dt_disp*1e3, dt_total*1e3
+            "Performance Metrics:\n"
+            "  System Mode:\n"
+            "    - GPU Enabled: %s\n"
+            "  Timing (ms):\n"
+            "    - Image Decode: %.1f\n"
+            "    - Gesture Inference: %.1f\n"
+            "    - Message Publish: %.1f\n"
+            "    - Display: %.1f\n"
+            "    - Total Processing: %.1f\n"
+            "  FPS:\n"
+            "    - Callback FPS: %.1f\n"
+            "    - Display FPS: %.1f\n"
+            "  Memory Usage:\n"
+            "    - Gesture: %s",
+            self._detector.use_gpu,
+            dt_decode*1e3, dt_infer*1e3, dt_pub*1e3, dt_disp*1e3, dt_total*1e3,
+            callback_fps, fps, gesture
         )
-
-    """
+    
     # ------------------------------------------------------------------ #
 
     @staticmethod

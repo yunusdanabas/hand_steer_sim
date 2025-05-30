@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+gesture_to_twist_node.py
 Translate gesture strings to geometry_msgs/Twist.
 """
 
@@ -45,7 +46,7 @@ class GestureToTwistNode:
         self._twist.angular.z = max(-self._MAX_ANG,  min(self._MAX_ANG,  self._twist.angular.z))
 
         self._publisher.publish(self._twist)
-        rospy.loginfo_throttle(0.5, "%s → v=%.2f  ω=%.2f", g, self._twist.linear.x, self._twist.angular.z)
+        # rospy.loginfo_throttle(0.5, "%s → v=%.2f  ω=%.2f", g, self._twist.linear.x, self._twist.angular.z)
 
 
 def main() -> None:

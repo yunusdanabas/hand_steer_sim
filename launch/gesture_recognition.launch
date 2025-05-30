@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <launch>
+  <!-- gesture_recognition.launch -->
   <!-- Launch either Static or Steering recognizer -->
 
   <!-- Control mode: static or steering -->
