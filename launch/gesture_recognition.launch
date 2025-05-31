@@ -69,8 +69,8 @@
         <param name="steering_keypoint_classifier_label" value="$(arg steering_keypoint_classifier_label)"/>
         <param name="steering_keypoint_classifier_model" value="$(arg steering_keypoint_classifier_model)"/>
         <param name="subscribe_image_topic"     value="$(arg subscribe_image_topic)"/>
-        <param name="publish_static_topic"      value="/gesture/wheel_static"/>
-        <param name="publish_dyn_topic"         value="/gesture/wheel_dyn"/>
+        <param name="publish_static_topic"      value="/gesture/steering_static"/>
+        <param name="publish_dyn_topic"         value="/gesture/steering_dyn"/>
         <param name="show_image"                value="$(arg show_image)"/>
       </node>
     </group>

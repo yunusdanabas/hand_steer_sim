@@ -168,7 +168,7 @@ def init_mediapipe(args):
 
 def setup_window() -> str:
     """Create and configure the display window."""
-    win = "Hand-Steer Recorder"
+    win = "Hand-Steer Recorder - Yunus Emre Danabas"
     cv.namedWindow(win, cv.WINDOW_FULLSCREEN)
     return win
 

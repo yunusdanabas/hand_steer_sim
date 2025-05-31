@@ -1,32 +1,37 @@
 <?xml version="1.0"?>
 <package format="2">
+  <!-- General metadata -->
   <name>hand_steer_sim</name>
+  <version>0.2.0</version>            
+  <description>
+    Hand-Steer-Sim - real-time hand-gesture interface (static + wheel-turn)
+    for differential-drive robots. Developed for the EE417 course project.
+  </description>
 
-  <version>0.1.0</version>
+  <maintainer email="yunusdanabas@sabanciuniv.edu">Yunus Emre Danabas</maintainer>
+  <license>MIT</license>              
 
-  <description> The hand_steer_sim package for EE417 course project </description>
-  <maintainer email="yunusdanabas@sabanciuniv.edu">yunusdanabas</maintainer>
-  <license>TODO</license>
-
+  <!-- Build-time / run-time deps -->
+  <!--  We only ship Python nodes, but list the ROS libs we import.          -->
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>cv_bridge</build_depend>
-  <build_depend>geometry_msgs</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>sensor_msgs</build_depend>
-  <build_depend>std_msgs</build_depend>
 
-  <build_export_depend>cv_bridge</build_export_depend>
-  <build_export_depend>geometry_msgs</build_export_depend>
-  <build_export_depend>rospy</build_export_depend>
-  <build_export_depend>sensor_msgs</build_export_depend>
-  <build_export_depend>std_msgs</build_export_depend>
+  <!-- core ROS Python + msgs -->
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>cv_bridge</depend>
 
-  <exec_depend>cv_bridge</exec_depend>
-  <exec_depend>geometry_msgs</exec_depend>
-  <exec_depend>rospy</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
+  <!-- simulation / control (needed by launch files) -->
+  <depend>controller_manager</depend>
+  <depend>gazebo_ros</depend>
+  <depend>xacro</depend>
 
+  <!-- optional – RealSense camera node (only if you actually use it) -->
+  <exec_depend>realsense2_camera</exec_depend>
+
+  <!-- Export section -->
   <export>
+    <!-- Nothing special to export today -->
   </export>
 </package>

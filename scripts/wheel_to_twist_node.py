@@ -30,8 +30,9 @@ class WheelToTwist:
         dyn_topic  = g("~dyn_topic",    "/gesture/steering_dyn")
         cmd_topic  = g("~cmd_vel_topic","/robot_diff_drive_controller/cmd_vel")
 
-        self._tw  = Twist()
-        self._pub = rospy.Publisher(cmd_topic, Twist, queue_size=10)
+        self._tw           = Twist()
+        self._pub          = rospy.Publisher(cmd_topic, Twist, queue_size=10)
+        self._holding_wheel = False          # ← NEW  (gated steering)
 
         rospy.Subscriber(stat_topic, String, self._cb_static, queue_size=5)
         rospy.Subscriber(dyn_topic,  String, self._cb_dyn,    queue_size=5)
@@ -42,13 +43,16 @@ class WheelToTwist:
     # ───────── linear (static gesture) callback ─────────
     def _cb_static(self, msg: String):
         g = msg.data
+        # ----------------------------------- update "holding wheel" flag
+        self._holding_wheel = (g == "Holding Wheel")
+
         if g == "NONE":
             return  # Ignore NONE gesture
         elif g == "Stop":
             self._tw.linear.x = 0.0
             self._tw.angular.z = 0.0
         elif g == "Holding Wheel":
-            self._tw.linear.x *= 0.95          # gentle drag so it coasts
+            self._tw.linear.x *= 1          # gentle drag so it coasts
         elif g == "Speed Up":
             self._tw.linear.x += self._LIN_STEP
         elif g == "Speed Down":
@@ -64,12 +68,17 @@ class WheelToTwist:
     # ───────── angular (dynamic gesture) callback ────────
     def _cb_dyn(self, msg: String):
         g = msg.data
+
+        # Ignore steering commands unless the wheel is currently "held"
+        if not self._holding_wheel:
+            return
+
         if g == "NONE":
             return  # Ignore NONE gesture
         elif g in self._ANG_INC:
             self._tw.angular.z += self._ANG_INC[g]
         elif g == "Forward":
-            self._tw.angular.z *= 0.8     # decay back to straight
+            self._tw.angular.z *= 1     # decay back to straight
         else:
             rospy.logwarn_throttle(2.0, "Unknown dynamic gesture '%s'", g)
             return

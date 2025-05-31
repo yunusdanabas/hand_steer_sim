@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-ROS node: /image_raw  →  /gesture/wheel_static, /gesture/wheel_dyn   (string)
+steering_sign_recognition_node.py
+ROS node: /image_raw  →  /gesture/steering_static, /gesture/steering_dyn   (string)
 """
 
 import rospy, cv2 
@@ -21,8 +22,8 @@ class SteeringSignRecognitionNode:
         
         # Topics
         self._img_topic = p("~subscribe_image_topic", "/image_raw")
-        stat_topic = p("~publish_static_topic", "/gesture/wheel_static")
-        dyn_topic = p("~publish_dyn_topic", "/gesture/wheel_dyn")
+        stat_topic = p("~publish_static_topic", "/gesture/steering_static")
+        dyn_topic = p("~publish_dyn_topic", "/gesture/steering_dyn")
         
         # Model paths - using absolute paths from launch file
         key_lbl = p("~steering_keypoint_classifier_label", 
@@ -69,28 +70,28 @@ class SteeringSignRecognitionNode:
             return
             
         # Process frame
-        dbg, stat_lbl, dyn_lbl = self._detector.recognise(frame)
+        result = self._detector.recognise(frame)
         
         # Publish gestures
-        self._pub_stat.publish(stat_lbl)
-        self._pub_dyn.publish(dyn_lbl)
+        self._pub_stat.publish(result.static_label)
+        self._pub_dyn.publish(result.dynamic_label)
         
         # Display if enabled
         if self._show_image:
             fps = self._fpscalc.get()
             # Overlay text
-            cv2.putText(dbg, f"{stat_lbl} | {dyn_lbl}", (10, 30),
+            cv2.putText(result.dbg_img, f"{result.static_label} | {result.dynamic_label}", (10, 30),
                        cv2.FONT_HERSHEY_SIMPLEX, .8, (0, 0, 0), 4, cv2.LINE_AA)
-            cv2.putText(dbg, f"{stat_lbl} | {dyn_lbl}", (10, 30),
+            cv2.putText(result.dbg_img, f"{result.static_label} | {result.dynamic_label}", (10, 30),
                        cv2.FONT_HERSHEY_SIMPLEX, .8, (255, 255, 255), 2, cv2.LINE_AA)
             # Second line: FPS
-            cv2.putText(dbg, f"FPS:{fps:.1f}", (10, 60),
+            cv2.putText(result.dbg_img, f"FPS:{fps:.1f}", (10, 60),
                        cv2.FONT_HERSHEY_SIMPLEX, .7, (0, 0, 0), 4, cv2.LINE_AA)
-            cv2.putText(dbg, f"FPS:{fps:.1f}", (10, 60),
+            cv2.putText(result.dbg_img, f"FPS:{fps:.1f}", (10, 60),
                        cv2.FONT_HERSHEY_SIMPLEX, .7, (255, 255, 255), 2, cv2.LINE_AA)
             
             # Display debug image
-            cv2.imshow("Steering Recognition", dbg)
+            cv2.imshow("Steering Recognition", result.dbg_img)
             cv2.waitKey(1)
 
     @staticmethod
