@@ -51,8 +51,8 @@ STATIC_LABELS_CSV = REPO_ROOT / "hand_steer_sim/model/steering_mode/keypoint_cla
 HISTORY_LABELS_CSV = REPO_ROOT / "hand_steer_sim/model/steering_mode/point_history_classifier/point_history_classifier_label.csv"
 
 # Configuration constants
-EXPECTED_LEN = {"static": 42, "history": 128}
-HISTORY_LEN = 16
+EXPECTED_LEN = {"static": 42, "history": 64}
+HISTORY_LEN = 8
 FONT = cv.FONT_HERSHEY_SIMPLEX
 
 # ──────────────────────────── CLI Parser ────────────────────────────────
@@ -95,12 +95,57 @@ def parse_cli() -> argparse.Namespace:
 def open_camera(args) -> SimpleNamespace:
     """Initialize and configure camera (RealSense or standard webcam)."""
     if args.realsense:
-        pipe, cfg = rs.pipeline(), rs.config()
-        cfg.enable_stream(rs.stream.color, args.width, args.height, rs.format.bgr8, 30)
-        pipe.start(cfg)
-
-        _grab = lambda: np.asanyarray(pipe.wait_for_frames().get_color_frame().get_data())
-        _close = pipe.stop
+        try:
+            pipe = rs.pipeline()
+            cfg = rs.config()
+            
+            # Try to find and configure RealSense device
+            ctx = rs.context()
+            devices = ctx.query_devices()
+            if len(devices) == 0:
+                raise RuntimeError("No RealSense devices found")
+                
+            # Configure color stream with more flexible settings
+            cfg.enable_stream(rs.stream.color, 
+                            args.width, args.height, 
+                            rs.format.bgr8, 30)
+            
+            # Try to start pipeline with retries
+            for _ in range(3):
+                try:
+                    pipe.start(cfg)
+                    break
+                except RuntimeError as e:
+                    if "Couldn't resolve requests" in str(e):
+                        # Try alternative configuration
+                        cfg = rs.config()
+                        cfg.enable_stream(rs.stream.color, 
+                                        640, 480,  # Try default resolution
+                                        rs.format.bgr8, 30)
+                        continue
+                    raise
+            
+            def grab_frame():
+                try:
+                    frames = pipe.wait_for_frames(timeout_ms=1000)
+                    color_frame = frames.get_color_frame()
+                    if not color_frame:
+                        return None
+                    return np.asanyarray(color_frame.get_data())
+                except RuntimeError as e:
+                    if "Frame didn't arrive" in str(e):
+                        print("[WARN] Frame timeout - retrying...")
+                        return None
+                    raise
+            
+            _grab = grab_frame
+            _close = pipe.stop
+            
+        except Exception as e:
+            print(f"[ERROR] Failed to initialize RealSense camera: {e}")
+            print("[INFO] Falling back to standard webcam...")
+            args.realsense = False
+            return open_camera(args)
     else:
         cap = cv.VideoCapture(args.device, cv.CAP_V4L2)
         cap.set(cv.CAP_PROP_FRAME_WIDTH, args.width)
@@ -180,12 +225,16 @@ def vec_static(lm_list):
 def vec_history(img, hist):
     """Generate history feature vector from landmark trajectories."""
     h, w = img.shape[:2]
-    base_x, base_y = hist[0][0]
-    flat = []
-    for frame in hist:
-        for x, y in frame:
-            flat.extend([(x-base_x)/w, (y-base_y)/h])
-    return flat  # 128-D
+    # Convert deque to numpy array and reshape to (8,4,2)
+    hist_array = np.array(hist)
+    # Get base coordinates from first frame
+    base_x, base_y = hist_array[0,0]
+    # Normalize coordinates relative to base point and image dimensions
+    normalized = np.zeros_like(hist_array, dtype=np.float32)
+    normalized[:,:,0] = (hist_array[:,:,0] - base_x) / w
+    normalized[:,:,1] = (hist_array[:,:,1] - base_y) / h
+    # Flatten to 128-D vector (8 frames * 4 points * 2 coordinates)
+    return normalized.ravel().tolist()
 
 # ──────────────────────────── Visualization ────────────────────────────
 def draw_overlay(img, fps, mode, labels, label_idx, recording, counters):
@@ -194,9 +243,11 @@ def draw_overlay(img, fps, mode, labels, label_idx, recording, counters):
     
     # FPS display
     txt = f"FPS:{fps:.2f}"
-    (tw, th), _ = cv.getTextSize(txt, FONT, 1, 2)
-    cv.putText(img, txt, (w-tw-12, th+12), FONT, 1, (0,0,0), 4, cv.LINE_AA)
-    cv.putText(img, txt, (w-tw-12, th+12), FONT, 1, (255,255,255), 2, cv.LINE_AA)
+    (tw, th), _ = cv.getTextSize(txt, FONT, 1.0, 2)
+    # Draw black outline with thicker stroke
+    cv.putText(img, txt, (w-tw-12, th+12), FONT, 1.1, (0,0,0), 6, cv.LINE_AA)
+    # Draw white text on top
+    cv.putText(img, txt, (w-tw-12, th+12), FONT, 1.1, (255,255,255), 3, cv.LINE_AA)
     
     # Mode and status banner
     banner = []
@@ -211,24 +262,33 @@ def draw_overlay(img, fps, mode, labels, label_idx, recording, counters):
             banner.append("Choose label 0-9 before recording")
             
     for i, line in enumerate(banner):
-        cv.putText(img, line, (10, 30+25*i), FONT, 0.7, (0,0,0), 2, cv.LINE_AA)
-        cv.putText(img, line, (10, 30+25*i), FONT, 0.7, (255,255,255), 1, cv.LINE_AA)
+        # Draw black outline with thicker stroke
+        cv.putText(img, line, (10, 30+25*i), FONT, 1.0, (0,0,0), 4, cv.LINE_AA)
+        # Draw white text on top
+        cv.putText(img, line, (10, 30+25*i), FONT, 1.0, (255,255,255), 2, cv.LINE_AA)
     
     # Label list
     if mode and labels:
         for i, lbl in enumerate(labels):
-            cv.putText(img, f"{i}: {lbl}", (10, 120+i*22),
-                      FONT, 0.6, (255,255,255), 1, cv.LINE_AA)
+            text = f"{i}: {lbl}"
+            # Draw black outline with thicker stroke
+            cv.putText(img, text, (10, 120+i*22), FONT, 0.8, (0,0,0), 4, cv.LINE_AA)
+            # Draw white text on top
+            cv.putText(img, text, (10, 120+i*22), FONT, 0.8, (255,255,255), 2, cv.LINE_AA)
     
     # Sample counters
     if counters:
-        cv.putText(img, "Samples:", (10, h-120), FONT, 0.6,
-                  (255,255,255), 1, cv.LINE_AA)
+        # Draw "Samples:" header
+        cv.putText(img, "Samples:", (10, h-120), FONT, 0.8, (0,0,0), 4, cv.LINE_AA)
+        cv.putText(img, "Samples:", (10, h-120), FONT, 0.8, (255,255,255), 2, cv.LINE_AA)
+        
         for i, lbl in enumerate(labels):
             cnt = counters[lbl]
-            cv.putText(img, f"{lbl:<12} {cnt:5d}",
-                      (10, h-100+i*20), FONT, 0.5,
-                      (255,255,255), 1, cv.LINE_AA)
+            text = f"{lbl:<12} {cnt:5d}"
+            # Draw black outline with thicker stroke
+            cv.putText(img, text, (10, h-100+i*20), FONT, 0.7, (0,0,0), 4, cv.LINE_AA)
+            # Draw white text on top
+            cv.putText(img, text, (10, h-100+i*20), FONT, 0.7, (255,255,255), 2, cv.LINE_AA)
     return img
 
 def draw_point_history(img, history):
@@ -236,7 +296,7 @@ def draw_point_history(img, history):
     for i, frame in enumerate(history):
         for x, y in frame:
             if x or y:
-                cv.circle(img, (x, y), 1 + i // 2, (152, 251, 152), 2)
+                cv.circle(img, (x, y), 2 + i // 2, (152, 251, 152), 4)
     return img
 
 # ──────────────────────────── Validation ───────────────────────────────
@@ -299,6 +359,7 @@ def run_recorder(args):
         # Frame capture and processing
         frame = cam.grab()
         if frame is None:
+            cv.waitKey(1)  # Keep UI responsive
             continue
         frame = cv.flip(frame, 1)
 
