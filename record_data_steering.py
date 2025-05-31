@@ -48,8 +48,8 @@ def get_args():
 def select_mode(key: int, mode: int):
     number = key - 48 if 48 <= key <= 57 else -1
     if   key == ord("n"): mode = 0
-    elif key == ord("k"): mode = 1     # still logs key‑points
-    elif key == ord("h"): mode = 2     # logs 4‑MCP trajectories
+    elif key == ord("k"): mode = 1     # still logs key-points
+    elif key == ord("h"): mode = 2     # logs 4-MCP trajectories
     return number, mode
 
 
@@ -77,7 +77,7 @@ def pre_process_point_history(image, point_history):
 
 
 def logging_csv(number, mode, kp_vec, hist_vec):
-    if mode == 1 and 0 <= number <= 9:            # key‑points
+    if mode == 1 and 0 <= number <= 9:            # key-points
         path = Path("hand_steer_sim/model/steering_mode/keypoint_classifier/keypoint.csv")
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("a", newline="") as f:

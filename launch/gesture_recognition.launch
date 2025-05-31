@@ -20,9 +20,14 @@
 
   <!-- Steering-Mode model args (always declared) -->
   <arg name="steering_classifier_label"
-       default="$(find hand_steer_sim)/hand_steer_sim/model/steering_mode/wheel_lstm/wheel_lstm_label.csv"/>
+       default="$(find hand_steer_sim)/hand_steer_sim/model/steering_mode/point_history_classifier/point_history_classifier_label.csv"/>
   <arg name="steering_classifier_model"
-       default="$(find hand_steer_sim)/hand_steer_sim/model/steering_mode/wheel_lstm/wheel_lstm.tflite"/>
+       default="$(find hand_steer_sim)/hand_steer_sim/model/steering_mode/point_history_classifier/point_history_classifier.tflite"/>
+  
+  <arg name="steering_keypoint_classifier_label"
+       default="$(find hand_steer_sim)/hand_steer_sim/model/steering_mode/keypoint_classifier/keypoint_classifier_label.csv"/>
+  <arg name="steering_keypoint_classifier_model"
+       default="$(find hand_steer_sim)/hand_steer_sim/model/steering_mode/keypoint_classifier/keypoint_classifier.tflite"/>
 
   <!-- Common image & UI args -->
   <arg name="subscribe_image_topic" default="/image_raw"/>
@@ -56,13 +61,17 @@
             pkg="hand_steer_sim"
             type="steering_sign_recognition_node.py"
             output="screen">
+            
         <param name="use_gpu"                   value="$(arg use_gpu)"/>
-        <param name="control_mode"               value="steering"/>
-        <param name="steering_classifier_label"   value="$(arg steering_classifier_label)"/>
-        <param name="steering_classifier_model"   value="$(arg steering_classifier_model)"/>
-        <param name="subscribe_image_topic"       value="$(arg subscribe_image_topic)"/>
-        <param name="publish_gesture_topic"       value="$(arg publish_gesture_topic)"/>
-        <param name="show_image"                  value="$(arg show_image)"/>
+        <param name="control_mode"              value="steering"/>
+        <param name="steering_classifier_label" value="$(arg steering_classifier_label)"/>
+        <param name="steering_classifier_model" value="$(arg steering_classifier_model)"/>
+        <param name="steering_keypoint_classifier_label" value="$(arg steering_keypoint_classifier_label)"/>
+        <param name="steering_keypoint_classifier_model" value="$(arg steering_keypoint_classifier_model)"/>
+        <param name="subscribe_image_topic"     value="$(arg subscribe_image_topic)"/>
+        <param name="publish_static_topic"      value="/gesture/steering_static"/>
+        <param name="publish_dyn_topic"         value="/gesture/steering_dyn"/>
+        <param name="show_image"                value="$(arg show_image)"/>
       </node>
     </group>
 

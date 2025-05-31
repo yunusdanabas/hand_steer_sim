@@ -69,8 +69,9 @@
           pkg="hand_steer_sim"
           type="wheel_to_twist_node.py"
           output="screen">
-      <param name="wheel_topic"   value="/gesture/wheel_angle"/>
-      <param name="control_topic" value="$(arg control_topic)"/>
+      <param name="static_topic" value="/gesture/steering_static"/>
+      <param name="dyn_topic"    value="/gesture/steering_dyn"/>
+      <param name="cmd_vel_topic" value="$(arg control_topic)"/>
     </node>
   </group>
 </launch>

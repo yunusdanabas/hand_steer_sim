@@ -3,8 +3,8 @@
 """
 keypoint_classifier.py ― thin TFLite wrapper with **optional GPU delegate**.
 
-If `use_gpu=True` we try to load the standard TensorFlow‑Lite GPU delegate.
-If that fails (e.g. CPU‑only machine) we silently fall back to pure‑CPU so
+If `use_gpu=True` we try to load the standard TensorFlow-Lite GPU delegate.
+If that fails (e.g. CPU-only machine) we silently fall back to pure-CPU so
 the rest of the pipeline keeps working.
 """
 
@@ -51,11 +51,11 @@ class KeyPointClassifier:
         Parameters
         ----------
         landmark_vec : list[float]
-            Flattened, normalised key‑point vector (length 42).
+            Flattened, normalised key-point vector (length-42).
 
         Returns
         -------
-        int  →  predicted class ID (0‑based)
+        int  →  predicted class ID (0-based)
         """
         self.interpreter.set_tensor(
             self._in_index, np.asarray([landmark_vec], dtype=np.float32)

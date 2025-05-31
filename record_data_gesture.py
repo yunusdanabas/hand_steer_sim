@@ -67,7 +67,7 @@ def main():
     kp_cls = KeyPointClassifier(args.keypoint_model)
 
     with open("hand_steer_sim/model/static_mode/keypoint_classifier/keypoint_classifier_label.csv",
-              encoding="utf‑8‑sig") as f:
+              encoding="utf-8-sig") as f:
         labels = [row[0] for row in csv.reader(f)]
 
     # ---------- camera ----------------------------------------------------------------
@@ -89,8 +89,8 @@ def main():
         key  = cv.waitKey(10)
         if key == 27:                                        # Esc
             break
-        if key in range(48, 58): class_id = key - 48         # '0'‑'9'
-        if key == ord('k'):  mode = 1                        # log key‑points
+        if key in range(48, 58): class_id = key - 48         # '0'-'9'
+        if key == ord('k'):  mode = 1                        # log key-points
         if key == ord('n'):  mode = 0                        # neutral
 
         frame = grab()
