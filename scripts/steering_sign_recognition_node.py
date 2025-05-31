@@ -25,9 +25,9 @@ class SteeringSignRecognitionNode:
         dyn_topic = p("~publish_dyn_topic", "/gesture/wheel_dyn")
         
         # Model paths - using absolute paths from launch file
-        key_lbl = p("~steering_classifier_label", 
+        key_lbl = p("~steering_keypoint_classifier_label", 
                    "$(find hand_steer_sim)/hand_steer_sim/model/steering_mode/keypoint_classifier/keypoint_classifier_label.csv")
-        key_mod = p("~steering_classifier_model",
+        key_mod = p("~steering_keypoint_classifier_model",
                    "$(find hand_steer_sim)/hand_steer_sim/model/steering_mode/keypoint_classifier/keypoint_classifier.tflite")
         hist_lbl = p("~steering_classifier_label",
                     "$(find hand_steer_sim)/hand_steer_sim/model/steering_mode/point_history_classifier/point_history_classifier_label.csv")

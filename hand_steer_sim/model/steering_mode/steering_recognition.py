@@ -104,7 +104,7 @@ class SteeringRecognition:
         flat -= base
         flat[..., 0] /= w; flat[..., 1] /= h
         vec = flat.ravel()
-        # Ensure vector length matches model input (64 for 16 frames)
+        # Ensure vector length matches model input (64 for point history)
         if len(vec) > 64:
             vec = vec[:64]  # Truncate if longer
         elif len(vec) < 64:
