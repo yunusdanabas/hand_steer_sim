@@ -49,6 +49,9 @@ class SteeringRecognition:
         self._kpc = KeyPointClassifier(key_tflite,  use_gpu=use_gpu)
         self._phc = PointHistoryClassifier(hist_tflite, use_gpu=use_gpu)
 
+        # Add use_gpu as an attribute
+        self.use_gpu = use_gpu
+
         # MediaPipe
         self._mp = mp.solutions.hands.Hands(
             static_image_mode=False,

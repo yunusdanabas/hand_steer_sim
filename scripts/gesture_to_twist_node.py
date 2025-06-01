@@ -11,8 +11,8 @@ from geometry_msgs.msg import Twist
 
 
 class GestureToTwistNode:
-    _MAX_LIN =  0.5   # [m/s]  hard safety limits
-    _MAX_ANG =  1.5   # [rad/s]
+    _MAX_LIN =  1.0   # [m/s]  hard safety limits
+    _MAX_ANG =  2.0   # [rad/s]
 
     def __init__(self):
         p = rospy.get_param
