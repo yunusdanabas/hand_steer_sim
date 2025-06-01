@@ -51,8 +51,8 @@ STATIC_LABELS_CSV = REPO_ROOT / "hand_steer_sim/model/steering_mode/keypoint_cla
 HISTORY_LABELS_CSV = REPO_ROOT / "hand_steer_sim/model/steering_mode/point_history_classifier/point_history_classifier_label.csv"
 
 # Configuration constants
-EXPECTED_LEN = {"static": 42, "history": 64}
-HISTORY_LEN = 8
+HISTORY_LEN = 16
+EXPECTED_LEN = {"static": 42, "history": 128}
 FONT = cv.FONT_HERSHEY_SIMPLEX
 
 # ──────────────────────────── CLI Parser ────────────────────────────────
