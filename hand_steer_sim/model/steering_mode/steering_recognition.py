@@ -39,7 +39,7 @@ class SteeringRecognition:
         use_gpu: bool = False,
         min_det_conf: float = .7,
         min_track_conf: float = .7,
-        history_length: int = 8,  # Added history length parameter
+        history_length: int = 16,  # Added history length parameter
     ):
         # label lists
         self._key_lbl  = self._load_labels(key_lbl_csv)
@@ -59,7 +59,7 @@ class SteeringRecognition:
 
         # ---------------------------------------------
         # Majority-vote smoothing over last N dyn preds
-        self._vote_len   = 8
+        self._vote_len   = 16
         self._pred_hist  = deque(maxlen=self._vote_len)
 
         # Initialize history buffer using deque

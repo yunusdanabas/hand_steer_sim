@@ -4,7 +4,7 @@
   <!-- Main launcher: ties camera, simulation, gesture-recognition, and control -->
 
   <!-- Choose between static vs steering -->
-  <arg name="control_mode" default="static"/>  <!-- static | steering -->
+  <arg name="control_mode" default="steering"/>  <!-- static | steering -->
   
   <arg name="show_image"   default="true"/>
 

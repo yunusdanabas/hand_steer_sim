@@ -9,7 +9,7 @@ import rospy, cv2
 from sensor_msgs.msg import Image
 from std_msgs.msg    import String
 from cv_bridge       import CvBridge, CvBridgeError
-from cvfpscalc       import CvFpsCalc
+from scripts.cvfpscalc import CvFpsCalc
 from hand_steer_sim.model.steering_mode import SteeringRecognition
 import numpy as np
 

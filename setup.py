@@ -51,7 +51,6 @@ setup(
         "numpy>=1.24.0",           # Latest stable version
         "opencv-python>=4.8.0",    # Latest stable version
         "mediapipe>=0.10.0",       # Hand tracking and gesture recognition
-        "tensorflow~=2.15.0 ; platform_machine!='aarch64'",  # ML framework
     ],
     
     extras_require={

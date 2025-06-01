@@ -1,0 +1,8 @@
+[console_scripts]
+hsim_camera_pub = hand_steer_sim.scripts.camera_publisher_node:main
+hsim_gest2twist = hand_steer_sim.scripts.gesture_to_twist_node:main
+hsim_hand_sign = hand_steer_sim.scripts.hand_sign_recognition_node:main
+hsim_record_data = hand_steer_sim.scripts.hand_steer_data_recorder:main
+hsim_steer_sign = hand_steer_sim.scripts.steering_sign_recognition_node:main
+hsim_test_gest = hand_steer_sim.scripts.test_gestures:main
+hsim_wheel2twist = hand_steer_sim.scripts.wheel_to_twist_node:main
