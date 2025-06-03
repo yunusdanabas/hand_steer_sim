@@ -4,8 +4,8 @@
   <!-- Main launcher: ties camera, simulation, gesture-recognition, and control -->
 
   <!-- Choose between static vs steering -->
-  <arg name="control_mode" default="static"/>  <!-- static | steering -->
-  
+  <arg name="control_mode" default="steering"/>  <!-- static | steering -->
+  <arg name="log_timing"   default="false"/>
   <arg name="show_image"   default="true"/>
 
   <!-- Topics for gesture output and robot control -->
@@ -22,10 +22,10 @@
   <!-- /dev/video6 is the default device for the RealSense D435i but this could cause some issues later idk - Yunus --> 
 
   <!-- Drive the simulated car -->
-  <arg name="drive_car" default="false"/>
+  <arg name="drive_car" default="true"/>
 
   <!-- Use GPU or CPU for inference -->
-  <arg name="use_gpu" default="false"/>
+  <arg name="use_gpu" default="true"/>
 
   <!-- Camera interface -->
   <include file="$(find hand_steer_sim)/launch/camera_interface.launch">
@@ -48,8 +48,9 @@
     <arg name="ns"                      value="hand_steer"/>
     <arg name="subscribe_image_topic"   value="/image_raw"/>
     <arg name="publish_gesture_topic"   value="$(arg publish_gesture_topic)"/>
-    <arg name="show_image"              value="true"/>
+    <arg name="show_image"              value="$(arg show_image)"/>
     <arg name="use_gpu"                 value="$(arg use_gpu)"/>
+    <arg name="log_timing"              value="$(arg log_timing)"/>
   </include>
 
   <!-- 3) Discrete twist mapper (Static Mode) -->

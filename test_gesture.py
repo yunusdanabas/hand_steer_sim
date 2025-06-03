@@ -137,7 +137,7 @@ def main():
         ph_labels = [r[0] for r in csv.reader(open(
             "hand_steer_sim/model/steering_mode/point_history_classifier/point_history_classifier_label.csv", encoding="utf-8-sig"))]
 
-        hist_len = 8
+        hist_len = 16
         point_history = deque(maxlen=hist_len)
         gesture_hist = deque(maxlen=hist_len)
 
@@ -157,9 +157,10 @@ def main():
                 # update history buffer for dynamic model
                 point_history.append([pts[i] for i in MCP_IDXS])
                 dyn_id = 0
+                dyn_conf = 0.0
                 if len(point_history) == hist_len:
                     hist_vec = pre_process_history(frame, point_history)
-                    dyn_id = ph_cls(hist_vec)
+                    dyn_id, dyn_conf = ph_cls(hist_vec, return_confidence=True)
 
                 gesture_hist.append(dyn_id)
                 stable_dyn = Counter(gesture_hist).most_common(1)[0][0]
@@ -167,7 +168,7 @@ def main():
                 # draw landmarks & text
                 mp.solutions.drawing_utils.draw_landmarks(
                     frame,lm,mp.solutions.hands.HAND_CONNECTIONS)
-                label = f"{kp_labels[sign_id]} | {ph_labels[stable_dyn]}"
+                label = f"{kp_labels[sign_id]} | {ph_labels[stable_dyn]} ({dyn_conf:.2f})"
                 wrist = lm.landmark[0]; h,w = frame.shape[:2]
                 cv.putText(frame,label,(int(wrist.x*w),int(wrist.y*h)-10),
                            FONT,0.6,(255,255,255),2,cv.LINE_AA)

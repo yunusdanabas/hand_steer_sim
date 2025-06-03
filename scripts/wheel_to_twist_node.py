@@ -10,19 +10,17 @@ from std_msgs.msg    import String
 from geometry_msgs.msg import Twist
 
 class WheelToTwist:
-    _MAX_LIN = 1.0     # m/s   (tune)
+    _MAX_LIN = 2.0     # m/s   (You can tune)
     _MAX_ANG = 2.0     # rad/s
 
-    # angular step per dynamic gesture
+    # Angular step per dynamic gesture
     _ANG_INC = {
         "Turn Left":       +0.05,
-        "Turn Left Fast":  +0.10,
         "Turn Right":      -0.05,
-        "Turn Right Fast": -0.10,
     }
 
     # linear increment for static gestures
-    _LIN_STEP = 0.08
+    _LIN_STEP = 0.05  # m/s   (You can tune)
 
     def __init__(self):
         g = rospy.get_param
