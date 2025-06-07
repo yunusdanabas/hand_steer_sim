@@ -56,7 +56,7 @@ hand_steer_sim/
 ```bash
 # clone into your catkin workspace
 cd ~/catkin_ws/src
-git clone https://github.com/<you>/hand_steer_sim.git
+git clone https://github.com/yunusdanabas/hand_steer_sim.git
 cd ..
 
 # ROS + Python deps
