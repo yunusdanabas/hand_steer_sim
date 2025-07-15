@@ -1,4 +1,3 @@
-````markdown
 # Hand-Steer-Sim  
 **Real-Time Gesture Teleoperation for Mobile Robots**
 
