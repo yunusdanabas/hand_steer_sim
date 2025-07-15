@@ -1,90 +1,35 @@
 # Hand-Steer-Sim
 
-*A camera-based hand-gesture interface for ROS Noetic differential-drive robots.*
+Hand-Steer-Sim provides a camera-based interface for controlling differential-drive robots in ROS. Static hand signs and continuous steering gestures are converted into `geometry_msgs/Twist` messages, enabling both discrete speed commands and smooth turning.
 
----
+## Setup
 
-## 🚀 Quick Demo
+### Requirements
+- Ubuntu 20.04--24.04 with ROS Noetic
+- Python 3.8+
 
-```bash
-# Start the full pipeline (camera ▶︎ gesture ▶︎ velocity ▶︎ Gazebo)
-roslaunch hand_steer_sim sign_control.launch \
-           control_mode:=steering \
-           show_image:=true
-```
-
-* **Static gestures** – **Stop / Holding-Wheel / Speed-Up / Speed-Down** → change **linear speed**
-* **Dynamic wheel gestures** – **Turn-Left(±) / Turn-Right(±)** → change **angular speed**
-
-The stack publishes `geometry_msgs/Twist` on
-`/robot_diff_drive_controller/cmd_vel`, so you can either keep the Gazebo robot from the launch file **or** plug in any real robot that subscribes to the same topic.
-
----
-
-## 📁 Repository at a Glance
-
-```
-hand_steer_sim/
-├─ launch/            # one-click launch files (camera + inference + control)
-├─ scripts/           # pure-Python ROS nodes & CLI utilities
-├─ model/
-│   ├─ static_mode/   # TFLite model & labels for static gestures
-│   └─ steering_mode/ # key-point + LSTM models for wheel-turn dynamics
-├─ data/              # (git-ignored) CSVs recorded by hsim_record_data
-├─ urdf/  config/     # Gazebo diff-drive robot & controller params
-└─ setup.py           # PEP 517 + catkin install recipe
-```
-
-### Handy CLI shortcuts (installed by `pip install -e .`)
-
-| command            | purpose                                                        |
-| ------------------ | -------------------------------------------------------------- |
-| `hsim_camera_pub`  | publish webcam / RealSense frames on `/image_raw`              |
-| `hsim_record_data` | fullscreen GUI to capture new static & dynamic gesture samples |
-| `hsim_test_gest`   | stand-alone live visualiser of model predictions               |
-| `hsim_hand_sign`   | ROS node – static gesture → `/gesture/hand_sign`               |
-| `hsim_gest2twist`  | ROS node – static gesture → `/cmd_vel` (discrete)              |
-| `hsim_steer_sign`  | ROS node – steering (static + dynamic) → two gesture topics    |
-| `hsim_wheel2twist` | ROS node – steering gesture → `/cmd_vel` (continuous)          |
-
----
-
-## 🛠️  Installation
-
-### 1. Native (Ubuntu 20.04 – 24.04, ROS Noetic)
-
+### Installation
 ```bash
 # clone into your catkin workspace
 cd ~/catkin_ws/src
 git clone https://github.com/yunusdanabas/hand_steer_sim.git
 cd ..
 
-# ROS + Python deps
+# ROS + Python dependencies
 sudo apt install ros-noetic-cv-bridge ros-noetic-image-transport \
                  ros-noetic-tf2-ros ros-noetic-controller-manager
 pip install -U pip
 pip install -e src/hand_steer_sim[realsense]   # drop [realsense] if not needed
 
-# build Gazebo plugins & msgs
+# build Gazebo plugins & messages
 catkin_make
 source devel/setup.bash
 ```
+**GPU delegate** – Install `libtensorflow-lite-gpu2` and pass `use_gpu:=true` in the launch files for faster inference.
 
-> **GPU delegate** – Install `libtensorflow-lite-gpu2` and pass `use_gpu:=true` in the launch files for faster inference.
-
-### 2. Docker
-
-Two multi-stage images are provided:
-
-| Tag              | Purpose                           |
-| ---------------- | --------------------------------- |
-| `hand_steer:cpu` | CPU-only development & deployment |
-| `hand_steer:gpu` | CUDA 11.8 + TF-Lite GPU delegate  |
-
-#### Run (GPU example)
-
+Docker images `hand_steer:cpu` and `hand_steer:gpu` are also available. Example GPU run:
 ```bash
-xhost +local:docker    # allow X11
+xhost +local:docker
 docker run -it --rm --gpus all \
   --name hand_steer_gpu \
   --network host \
@@ -97,27 +42,43 @@ docker run -it --rm --gpus all \
   hand_steer:gpu
 ```
 
-> The `-v $(pwd)/hand_steer_sim/model:…` mount **persists trained models & CSVs** across container restarts.
+## Running
 
----
+Start the complete camera-to-velocity pipeline:
+```bash
+roslaunch hand_steer_sim sign_control.launch control_mode:=steering show_image:=true
+```
+This command brings up a Gazebo robot and publishes velocity on `/robot_diff_drive_controller/cmd_vel`.
 
-## 🔄  Workflow: Collect → Train → Deploy
+CLI utilities installed via `pip install -e .` include `hsim_camera_pub`, `hsim_record_data`, `hsim_test_gest`, `hsim_hand_sign`, `hsim_gest2twist`, `hsim_steer_sign`, and `hsim_wheel2twist`.
 
-| Stage      | Tool / Notebook                                                                                                  | Hint                                                               |
-| ---------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| **Record** | `hsim_record_data`                                                                                               | Press **Enter** to snapshot; files saved under `data/<timestamp>/` |
-| **Train**  | `notebooks/keypoint_classification.ipynb` (static) <br> `notebooks/point_history_classification.ipynb` (dynamic) | Generates `.tflite` models (42-D static, 128-D dynamic)            |
-| **Test**   | `hsim_test_gest`                                                                                                 | Live overlay of static **and** dynamic predictions                 |
-| **Deploy** | `roslaunch hand_steer_sim sign_control.launch …`                                                                 | Choose `control_mode:=static` **or** `control_mode:=steering`      |
+## Directory Structure
+```text
+hand_steer_sim/
+├─ launch/            # launch files (camera, inference, control)
+├─ scripts/           # Python ROS nodes & CLI tools
+├─ model/
+│   ├─ static_mode/   # static gesture models and labels
+│   └─ steering_mode/ # key-point + LSTM models for wheel-turn dynamics
+├─ data/              # recorded CSVs (not in git)
+├─ urdf/  config/     # Gazebo robot & controller params
+└─ setup.py           # PEP 517 + catkin install recipe
+```
 
----
+## Technologies
+- ROS Noetic (rospy, geometry_msgs, cv_bridge, etc.)
+- Python / OpenCV / Mediapipe
+- TensorFlow Lite for ML inference
+- Gazebo for simulation
+- Intel RealSense (optional)
 
-## 🧑‍💻 Developer Notes
+## Example Workflow
+1. **Record** gestures with `hsim_record_data` (saves CSVs under `data/<timestamp>/`).
+2. **Train** models using the notebooks in `model/**/notebooks`.
+3. **Test** predictions live with `hsim_test_gest`.
+4. **Deploy** using `roslaunch hand_steer_sim sign_control.launch`.
 
-* **Features**
-  *Static* → 21 landmarks → 42-element wrist-relative vector
-  *Dynamic* → 16-frame history of 4 MCP joints → 128-element vector
-* **Smoothing** – Dynamic IDs are majority-voted over the last 16 frames for robustness.
-* **Recorder threading** – A background writer keeps capture FPS high while samples are saved.
+See [`report/EE417_FinalReport_YunusEmreDanabas.pdf`](report/EE417_FinalReport_YunusEmreDanabas.pdf) for an in-depth description of the project.
 
-Made with ♥ by Yunus Emre Danabaş
+This repository is released under the MIT License.
+
