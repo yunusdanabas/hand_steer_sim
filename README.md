@@ -1,8 +1,3 @@
-Below is an **updated, drop-in README.md** followed by a **short blog-style announcement post** you can adapt for your website or LinkedIn.
-Feel free to tweak image filenames in the `figures/` folder as you add them.
-
----
-
 ````markdown
 # Hand-Steer-Sim  
 **Real-Time Gesture Teleoperation for Mobile Robots**
