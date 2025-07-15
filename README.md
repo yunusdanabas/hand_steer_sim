@@ -5,7 +5,7 @@
 > `geometry_msgs/Twist` commands for differential-drive robots in **ROS Noetic**.
 
 <div align="center">
-  <img src="figures/detailed_system_diagram.png" width="85%" alt="Detailed system diagram"/>
+  <img src="figures/detailed_system_diagram2.png" width="85%" alt="Detailed system diagram"/>
 </div>
 
 ---
@@ -164,6 +164,3 @@ Built on MediaPipe, TensorFlow Lite, ROS Noetic and Gazebo.
 ## 📜 License
 
 > *No explicit license — feel free to fork, modify, and share.*
-
-```
-```
