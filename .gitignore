@@ -53,3 +53,6 @@ CATKIN_IGNORE
 # Tar files
 *.tar
 hand_steer_cpu.tar
+
+# Project Description
+PROJECT_DESCRIPTION.md
